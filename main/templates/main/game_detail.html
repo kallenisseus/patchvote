@@ -1,0 +1,17 @@
+{% extends "main/base.html" %}
+{% block content %}
+<h1>{{ game.name }}</h1>
+
+<h2>Patches</h2>
+<ul>
+  {% for patch in game.patches.all %}
+    <li>
+      <a href="{% url 'patch_detail' game.slug patch.version %}">
+        Patch {{ patch.version }}
+      </a>
+    </li>
+  {% empty %}
+    <li>No patches yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

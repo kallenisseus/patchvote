@@ -1,0 +1,10 @@
+{% extends "main/base.html" %}
+{% block content %}
+
+<h1>{{ game.name }} – Patch {{ patch.version }}</h1>
+
+<div class="panel">
+  <pre>{{ patch.raw_text|default:"No patch notes available." }}</pre>
+</div>
+
+{% endblock %}

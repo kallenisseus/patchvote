@@ -15,6 +15,8 @@ class Patch(models.Model):
     source_url = models.URLField(blank=True)
     raw_text = models.TextField(blank=True)
     content_hash = models.CharField(max_length=64, blank=True)
+    source_slug = models.CharField(max_length=200, blank=True)
+
 
     class Meta:
         unique_together = ("game", "version")

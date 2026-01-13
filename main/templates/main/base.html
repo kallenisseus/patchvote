@@ -1,0 +1,25 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'main/css/base.css' %}">
+<script defer src="{% static 'main/js/base.js' %}"></script>
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PatchVoting</title>
+
+    <link rel="stylesheet" href="{% static 'main/css/base.css' %}">
+    <script defer src="{% static 'main/js/base.js' %}"></script>
+  </head>
+
+  <body>
+    <nav>
+      <a href="{% url 'home' %}"><strong>PatchVoting</strong></a>
+    </nav>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
