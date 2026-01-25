@@ -1053,9 +1053,6 @@
   .rounded-full {
     border-radius: calc(infinity * 1px);
   }
-  .rounded-xl {
-    border-radius: var(--radius-xl);
-  }
   .border {
     border-style: var(--tw-border-style);
     border-width: 1px;
@@ -1104,10 +1101,6 @@
     }
   }
   .bg-linear-to-b {
-    background-image: linear-gradient(var(--tw-gradient-stops));
-  }
-  .bg-gradient-to-b {
-    --tw-gradient-position: to bottom in oklab;
     background-image: linear-gradient(var(--tw-gradient-stops));
   }
   .from-white\/5 {
@@ -1757,9 +1750,12 @@
   }
   .NavRail {
     background: rgba(11,16,32,.60);
-    height: calc(100vh - 60px);
     width: 4.25rem;
     transition: width 200ms ease-out;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    align-self: flex-start;
   }
   .NavRail:hover {
     width: 15rem;

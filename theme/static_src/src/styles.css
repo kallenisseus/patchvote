@@ -107,12 +107,16 @@
   .Shell { @apply flex; }
 
   /* ---------- Left nav rail (hover-expand) ---------- */
-  .NavRail {
+  .NavRail{
     @apply hidden md:flex shrink-0 flex-col border-r border-white/10;
     background: rgba(11,16,32,.60);
-    height: calc(100vh - 60px);
-    width: 4.25rem;            /* slightly wider than w-16 */
+    width: 4.25rem;
     transition: width 200ms ease-out;
+
+    position: sticky;
+    top: 60px;                 /* same as your header height */
+    height: calc(100vh - 60px);
+    align-self: flex-start;    /* helps inside flex layouts */
   }
   .NavRail:hover { width: 15rem; }
 
