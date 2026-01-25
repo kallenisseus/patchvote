@@ -1,0 +1,223 @@
+
+@import "tailwindcss";
+@plugin "daisyui";
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+  */
+@source "../../../**/*.{html,py,js}";
+
+/* =========================================================
+   PatchVoting UI System (semantic, React-like names)
+   ========================================================= */
+@layer components {
+  /* ---------- App foundation ---------- */
+  .App {
+    @apply min-h-screen text-base-content;
+    background: #0b1020;
+  }
+
+  .BackgroundGlow {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    pointer-events: none;
+  }
+  .Glow1 { position:absolute; top:-8rem; left:18%; width:26rem; height:26rem; border-radius:9999px; filter:blur(70px); background: rgba(124,58,237,.22); }
+  .Glow2 { position:absolute; top:26%; right:18%; width:26rem; height:26rem; border-radius:9999px; filter:blur(70px); background: rgba(34,211,238,.12); }
+  .Glow3 { position:absolute; bottom:-6rem; left:-6rem; width:34rem; height:34rem; border-radius:9999px; filter:blur(80px); background: rgba(99,102,241,.12); }
+
+  /* A subtle "grid starfield" feel */
+  .AppSurface {
+    @apply min-h-screen;
+    background-image:
+      radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+      radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 32px 32px, 64px 64px;
+    background-position: 0 0, 12px 18px;
+  }
+
+  /* ---------- Topbar ---------- */
+  .Topbar {
+    @apply sticky top-0 z-50 border-b border-white/10 backdrop-blur;
+    background: rgba(11,16,32,.72);
+  }
+
+  /* grid layout: left brand, center chip, right auth */
+  .TopbarInner {
+    @apply grid items-center gap-3 px-4 py-3;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .Brand {
+    @apply text-lg font-semibold tracking-tight hover:opacity-90;
+  }
+
+  .TopbarCenter {
+    @apply justify-self-center;
+  }
+
+  /* ---------- Game chip (bigger + centered) ---------- */
+  .GameChip {
+    @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-base transition;
+  }
+  .GameChipActive {
+    @apply border-primary/70 bg-primary/15 text-white;
+  }
+  .GameChipIdle {
+    @apply border-white/10 bg-white/5 text-white/80 hover:bg-white/10;
+  }
+  .GameChipIcon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold;
+  }
+
+  .GameChipImg {
+  @apply h-8 w-8 rounded-full border border-white/10 object-cover;
+}
+
+.GameNav {
+  @apply flex flex-wrap items-center justify-center gap-2;
+}
+
+.GameNavItem {
+  @apply inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition;
+}
+
+.GameNavItemIdle {
+  @apply border-white/10 bg-white/5 text-white/80 hover:bg-white/10;
+}
+
+.GameNavItemActive {
+  @apply border-primary/70 bg-primary/15 text-white;
+}
+
+.GameNavIcon {
+  @apply h-7 w-7 rounded-full border border-white/10 object-cover;
+}
+
+.GameNavIconFallback {
+  @apply inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold;
+}
+
+  /* ---------- Shell layout ---------- */
+  .Shell { @apply flex; }
+
+  /* ---------- Left nav rail (hover-expand) ---------- */
+  .NavRail {
+    @apply hidden md:flex shrink-0 flex-col border-r border-white/10;
+    background: rgba(11,16,32,.60);
+    height: calc(100vh - 60px);
+    width: 4.25rem;            /* slightly wider than w-16 */
+    transition: width 200ms ease-out;
+  }
+  .NavRail:hover { width: 15rem; }
+
+  .Nav { @apply flex flex-col gap-1 p-3; }
+
+  .NavItem {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-white/5;
+  }
+  .NavItemActive { @apply bg-white/10; }
+
+  .NavLabel { display:none; @apply text-sm font-medium; }
+  .NavRail:hover .NavLabel { display:inline; }
+
+  .NavSectionTitle { display:none; @apply px-3 mt-3 text-xs uppercase tracking-wider text-white/50; }
+  .NavRail:hover .NavSectionTitle { display:block; }
+
+  .NavFooter { @apply mt-auto pt-3 border-t border-white/10; }
+
+  /* ---------- Main canvas ---------- */
+  .Main { @apply flex-1 min-w-0 p-6; }
+  .Container { @apply mx-auto w-full max-w-6xl; }
+
+  /* =========================================================
+     Page primitives
+     ========================================================= */
+  .PageHeader { @apply flex items-start justify-between gap-4; }
+  .PageTitle { @apply text-3xl font-semibold tracking-tight; }
+  .PageSubtitle { @apply mt-1 text-white/60; }
+
+  .SectionHeader { @apply flex items-center justify-between gap-3; }
+  .SectionTitle { @apply text-sm font-semibold uppercase tracking-wider text-white/60; }
+
+  .Divider { @apply border-t border-white/10; }
+
+  /* ---------- Card / Panel ---------- */
+  .Card {
+    @apply rounded-2xl border border-white/10 bg-white/5;
+  }
+  .CardBody { @apply p-5; }
+
+  /* A more "Mobanalytics-like" hero card */
+  .HeroCard {
+    @apply overflow-hidden rounded-2xl border border-white/10;
+    background:
+      linear-gradient(135deg, rgba(99,102,241,.12), rgba(34,211,238,.06), rgba(124,58,237,.10)),
+      rgba(255,255,255,.04);
+  }
+  .HeroCardBody { @apply p-6; }
+
+  .KpiGrid { @apply grid gap-4 sm:grid-cols-3; }
+  .Kpi {
+    @apply rounded-2xl border border-white/10;
+    background: rgba(255,255,255,.04);
+  }
+  .KpiBody { @apply p-4; }
+  .KpiLabel { @apply text-xs uppercase tracking-wider text-white/60; }
+  .KpiValue { @apply mt-1 text-2xl font-semibold; }
+  .KpiHint { @apply mt-1 text-sm text-white/60; }
+
+  /* ---------- Media placeholders ---------- */
+  .ImagePlaceholder {
+    @apply rounded-xl border border-white/10 bg-white/5;
+    background-image:
+      radial-gradient(1200px 400px at 20% 10%, rgba(124,58,237,.25), transparent 55%),
+      radial-gradient(800px 300px at 80% 30%, rgba(34,211,238,.18), transparent 50%),
+      linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  }
+  .Poster {
+    @apply overflow-hidden rounded-xl border border-white/10 bg-white/5;
+    aspect-ratio: 16 / 9;
+    background-image:
+      radial-gradient(1200px 400px at 20% 10%, rgba(124,58,237,.25), transparent 55%),
+      radial-gradient(800px 300px at 80% 30%, rgba(34,211,238,.18), transparent 50%),
+      linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  }
+  .PosterInner {
+    @apply h-full w-full p-4 flex items-end justify-between;
+  }
+  .PosterTitle { @apply text-lg font-semibold; }
+  .PosterMeta { @apply text-xs text-white/70; }
+
+  /* ---------- Lists ---------- */
+  .List { @apply space-y-3; }
+  .ListItem {
+    @apply rounded-2xl border border-white/10;
+    background: rgba(255,255,255,.04);
+  }
+  .ListItemBody { @apply p-4; }
+
+  /* ---------- Tags ---------- */
+  .Tag {
+    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/80;
+  }
+
+  /* ---------- Forms ---------- */
+  .FormCard {
+    @apply w-full max-w-md rounded-2xl border border-white/10 bg-white/5;
+  }
+  .FormTitle { @apply text-2xl font-semibold tracking-tight; }
+  .FormField { @apply space-y-1; }
+  .FormLabel { @apply text-sm text-white/70; }
+  .FormHelp { @apply text-xs text-white/60; }
+}
+
+@layer utilities {
+  .success { @apply text-green-500; }
+  .danger  { @apply text-red-500; }
+}

@@ -1,0 +1,48 @@
+{% extends "main/base.html" %}
+{% block content %}
+
+  <div class="PageHeader">
+    <div>
+      <h1 class="PageTitle">Profile</h1>
+      <p class="PageSubtitle">Manage your account and view your activity.</p>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <section class="Card">
+      <div class="CardBody">
+        <div class="SectionTitle">Account</div>
+        <div class="mt-4 space-y-2 text-sm">
+          <div class="flex justify-between gap-3">
+            <span class="text-white/60">Username</span>
+            <span class="font-medium">{{ profile_user.username }}</span>
+          </div>
+          <div class="flex justify-between gap-3">
+            <span class="text-white/60">Email</span>
+            <span class="font-medium">{{ profile_user.email }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="Card">
+      <div class="CardBody">
+        <div class="SectionTitle">Linked game accounts</div>
+        <p class="mt-2 text-sm text-white/60">Riot / Steam integration later.</p>
+        <div class="mt-4">
+          {% include "account/partials/linked_accounts.html" %}
+        </div>
+      </div>
+    </section>
+
+    <section class="Card lg:col-span-2">
+      <div class="CardBody">
+        <div class="SectionTitle">Your patch suggestions</div>
+        <div class="mt-4">
+          {% include "account/partials/user_suggestions.html" %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+{% endblock %}

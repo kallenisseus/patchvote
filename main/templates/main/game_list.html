@@ -1,16 +1,50 @@
 {% extends "main/base.html" %}
 {% block content %}
-<h1>Games</h1>
 
-<ul>
-  {% for game in games %}
-    <li>
-      <a href="{% url 'game_detail' game.slug %}">
-        {{ game.name }}
-      </a>
-    </li>
-  {% empty %}
-    <li>No games yet.</li>
-  {% endfor %}
-</ul>
+  <div class="PageHeader">
+    <div>
+      <h1 class="PageTitle">Games</h1>
+      <p class="PageSubtitle">Pick a game to browse patches and vote on balance suggestions.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="Tag">{{ games|length }} game{{ games|length|pluralize }}</span>
+      <span class="Tag">Filters later</span>
+    </div>
+  </div>
+
+  {% if games %}
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for game in games %}
+        <a href="{% url 'game_detail' game.slug %}" class="Card hover:border-primary/60 transition">
+          <div class="CardBody">
+            <div class="Poster">
+              <div class="PosterInner">
+                <div>
+                  <div class="PosterTitle">{{ game.name }}</div>
+                  <div class="PosterMeta">Browse patches and suggestions</div>
+                </div>
+                <span class="Tag">{{ game.slug }}</span>
+              </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+              <span class="Tag">Open</span>
+              <span class="text-sm text-white/70">View →</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-8 Card">
+      <div class="CardBody">
+        <div class="SectionTitle">No games yet</div>
+        <p class="mt-2 text-white/60">Add your first game in Django admin to get started.</p>
+        <div class="mt-4">
+          <a class="btn btn-primary" href="/admin/">Open admin</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
 {% endblock %}

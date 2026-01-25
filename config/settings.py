@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    "tailwind",
+    "theme",
+
     
     "django.contrib.sites",
     "allauth",
@@ -66,6 +69,9 @@ INSTALLED_APPS = [
     "main",
 
 ]
+
+TAILWIND_APP_NAME = "theme"
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,17 +94,17 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                "django.template.context_processors.debug",
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "main.context_processors.current_game",
+                "main.context_processors.navbar_games",
             ],
         },
     },
 ]
 
-TEMPLATES[0]["OPTIONS"]["context_processors"] += [
-    "main.context_processors.navbar_games",
-]
 
 
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -150,6 +156,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

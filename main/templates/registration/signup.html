@@ -1,0 +1,50 @@
+{% extends "main/base.html" %}
+{% block content %}
+  <div class="FormCard">
+    <div class="CardBody">
+      <h1 class="FormTitle">Create account</h1>
+      <p class="mt-2 text-sm text-white/60">Join and start voting on suggestions.</p>
+
+      <form method="post" id="signup-form" class="mt-5 space-y-4">
+        {% csrf_token %}
+
+        <div class="FormField">
+          <div class="FormLabel">Username</div>
+          {{ form.username }}
+          {% for error in form.username.errors %}
+            <p class="danger text-sm">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="FormField">
+          <div class="FormLabel">Password</div>
+          {{ form.password1 }}
+
+          <ul class="mt-2 text-sm hidden" id="password-hints">
+            <li data-rule="length">At least 8 characters</li>
+            <li data-rule="common">Not a common password</li>
+            <li data-rule="numeric">Not entirely numeric</li>
+          </ul>
+
+          {% for error in form.password1.errors %}
+            <p class="danger text-sm">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="FormField">
+          <div class="FormLabel">Confirm password</div>
+          {{ form.password2 }}
+          {% for error in form.password2.errors %}
+            <p class="danger text-sm">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full">Sign up</button>
+      </form>
+
+      <p class="mt-4 text-sm text-white/60">
+        Already have an account? <a class="link" href="{% url 'login' %}">Log in</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

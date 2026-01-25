@@ -1,10 +1,21 @@
 {% extends "main/base.html" %}
 {% block content %}
+  <div class="PageHeader">
+    <div>
+      <h1 class="PageTitle">{{ game.name }} – Patch {{ patch.version }}</h1>
+      <p class="PageSubtitle">Official patch notes (raw text for now).</p>
+    </div>
+    <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5" href="{% url 'game_detail' game.slug %}">← Back</a>
+  </div>
 
-<h1>{{ game.name }} – Patch {{ patch.version }}</h1>
-
-<div class="panel">
-  <pre>{{ patch.raw_text|default:"No patch notes available." }}</pre>
-</div>
-
+  <div class="mt-6 Card">
+    <div class="CardBody">
+      <div class="SectionTitle">Patch notes</div>
+      <div class="mt-4">
+        <pre class="whitespace-pre-wrap rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+{{ patch.raw_text|default:"No patch notes available." }}
+        </pre>
+      </div>
+    </div>
+  </div>
 {% endblock %}

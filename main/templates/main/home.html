@@ -1,7 +1,66 @@
 {% extends "main/base.html" %}
 {% block content %}
-<h1>PatchVoting</h1>
-<p>Structured balance feedback by patch and rank.</p>
+  <div class="grid gap-6 lg:grid-cols-2">
+    <!-- Hero -->
+    <section class="HeroCard">
+      <div class="HeroCardBody">
+        <div class="PageHeader">
+          <div>
+            <h1 class="text-5xl font-semibold tracking-tight">PatchVoting</h1>
+            <p class="mt-2 text-white/60">
+              Mobanalytics-style patch feedback: suggestions, votes, and patch notes in one place.
+            </p>
+          </div>
+        </div>
 
-<a href="{% url 'game_list' %}">Browse games</a>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a class="btn btn-primary" href="{% url 'game_list' %}">Browse games</a>
+          <span class="Tag">Live: TFT</span>
+          <span class="Tag">More games later</span>
+        </div>
+
+        <div class="mt-6 KpiGrid">
+          <div class="Kpi"><div class="KpiBody">
+            <div class="KpiLabel">Suggestions</div>
+            <div class="KpiValue">—</div>
+            <div class="KpiHint">Coming soon</div>
+          </div></div>
+          <div class="Kpi"><div class="KpiBody">
+            <div class="KpiLabel">Votes</div>
+            <div class="KpiValue">—</div>
+            <div class="KpiHint">Coming soon</div>
+          </div></div>
+          <div class="Kpi"><div class="KpiBody">
+            <div class="KpiLabel">Patch versions</div>
+            <div class="KpiValue">—</div>
+            <div class="KpiHint">Coming soon</div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preview / placeholder visual -->
+    <section class="Card overflow-hidden">
+      <div class="CardBody">
+        <div class="SectionHeader">
+          <div class="SectionTitle">Preview</div>
+          <span class="Tag">Placeholder image</span>
+        </div>
+
+        <div class="mt-4 Poster">
+          <div class="PosterInner">
+            <div>
+              <div class="PosterTitle">TFT Dashboard</div>
+              <div class="PosterMeta">Patch notes • Suggestions • Votes</div>
+            </div>
+            <div class="Tag">Set 16</div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-sm text-white/60">
+          Add real screenshots later — this placeholder just holds the layout.
+        </div>
+      </div>
+    </section>
+  </div>
 {% endblock %}

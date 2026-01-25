@@ -1,17 +1,145 @@
 {% extends "main/base.html" %}
 {% block content %}
-<h1>{{ game.name }}</h1>
 
-<h2>Patches</h2>
-<ul>
-  {% for patch in game.patches.all %}
-    <li>
-      <a href="{% url 'patch_detail' game.slug patch.version %}">
-        Patch {{ patch.version }}
-      </a>
-    </li>
-  {% empty %}
-    <li>No patches yet.</li>
-  {% endfor %}
-</ul>
+  <div class="PageHeader">
+    <div>
+      <h1 class="PageTitle">{{ game.name }}</h1>
+      <p class="PageSubtitle">Community suggestions + official patch notes.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="Tag">{{ suggestions|length }} suggestions</span>
+      <span class="Tag">Slug: {{ game.slug }}</span>
+    </div>
+  </div>
+
+  <!-- Hero banner -->
+  <div class="mt-6 HeroCard overflow-hidden">
+    <div class="HeroCardBody">
+      <div class="grid gap-6 lg:grid-cols-[1fr_320px] items-start">
+        <div>
+          <div class="SectionTitle">Overview</div>
+          <p class="mt-2 text-white/60">
+            This page is designed like a compact dashboard: suggestions on the left, official patches on the right.
+          </p>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="Tag">Rank filters later</span>
+            <span class="Tag">Patch comparison later</span>
+            <span class="Tag">Charts later</span>
+          </div>
+
+          <div class="mt-6">
+            {% if user.is_authenticated and user.profile.is_verified %}
+              <a href="{% url 'patch_suggestion_create' game.slug %}" class="btn btn-primary btn-sm">+ Submit suggestion</a>
+            {% elif user.is_authenticated %}
+              <span class="text-sm text-white/60">You must be verified to submit suggestions.</span>
+            {% else %}
+              <span class="text-sm text-white/60"><a class="link" href="{% url 'login' %}">Log in</a> to vote or submit.</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="Poster">
+          <div class="PosterInner">
+            <div>
+              <div class="PosterTitle">Game image</div>
+              <div class="PosterMeta">Placeholder artwork</div>
+            </div>
+            <span class="Tag">{{ game.name|slice:":3"|upper }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <!-- LEFT: suggestions -->
+    <section class="Card">
+      <div class="CardBody">
+        <div class="SectionHeader">
+          <div class="SectionTitle">Patch suggestions</div>
+          {% if user.is_authenticated and user.profile.is_verified %}
+            <a href="{% url 'patch_suggestion_create' game.slug %}" class="btn btn-primary btn-sm">+ Submit</a>
+          {% endif %}
+        </div>
+
+        <div class="mt-4 List">
+          {% for suggestion in suggestions %}
+            <div class="ListItem">
+              <div class="ListItemBody">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-semibold truncate">{{ suggestion.title }}</div>
+                    <div class="mt-1 text-sm text-white/60">
+                      {{ suggestion.description|truncatechars:220 }}
+                    </div>
+                  </div>
+
+                  {% if suggestion.status == "approved" %}
+                    <span class="badge badge-success">{{ suggestion.get_status_display }}</span>
+                  {% elif suggestion.status == "rejected" %}
+                    <span class="badge badge-error">{{ suggestion.get_status_display }}</span>
+                  {% elif suggestion.status == "pending" %}
+                    <span class="badge badge-warning">{{ suggestion.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge">{{ suggestion.get_status_display }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-sm text-white/60">
+                  <span>By {{ suggestion.author.username }} · {{ suggestion.created_at|date:"Y-m-d" }}</span>
+                  <a class="link" href="{% url 'patch_suggestion_detail' game.slug suggestion.id %}">View</a>
+                </div>
+
+                <div class="mt-3">
+                  {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'patch_vote' suggestion.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline btn-sm rounded-full">
+                        👍 {{ suggestion.vote_count }}
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="btn btn-outline btn-sm rounded-full pointer-events-none opacity-80">
+                      👍 {{ suggestion.vote_count }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-white/60">No patch suggestions yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: patches -->
+    <aside class="lg:sticky lg:top-24 h-fit space-y-4">
+      <div class="Card">
+        <div class="CardBody">
+          <div class="SectionTitle">Official patches</div>
+          <div class="mt-3">
+            <ul class="menu menu-sm">
+              {% for patch in game.patches.all %}
+                <li><a href="{% url 'patch_detail' game.slug patch.version %}">{{ patch.version }}</a></li>
+              {% empty %}
+                <li><span class="text-white/60">No patches yet.</span></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="Card">
+        <div class="CardBody">
+          <div class="SectionTitle">Tip</div>
+          <p class="mt-2 text-sm text-white/60">
+            Add charts (winrate deltas, pickrate) later — this layout is ready for it.
+          </p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
 {% endblock %}
