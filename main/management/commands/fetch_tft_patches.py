@@ -1,11 +1,10 @@
 import hashlib
+import re
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
-import re
 
 from main.models import Game, Patch
-
 
 PATCH_NOTES_INDEX = "https://www.leagueoflegends.com/en-us/news/tags/teamfight-tactics-patch-notes/"
 GAME_UPDATES_BASE = "https://teamfighttactics.leagueoflegends.com/en-us/news/game-updates/"
@@ -20,9 +19,7 @@ class Command(BaseCommand):
             defaults={"name": "Teamfight Tactics"},
         )
 
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        }
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
         # -----------------------------
         # STEP 1: DISCOVER PATCHES
@@ -36,7 +33,6 @@ class Command(BaseCommand):
         links = soup.find_all("a", href=True)
 
         patches = {}  # version -> slug
-
         for link in links:
             href = link["href"]
 
@@ -45,13 +41,11 @@ class Command(BaseCommand):
 
             slug = href.rstrip("/").split("/")[-1]
 
-            # normalize
             clean = slug.replace("teamfight-tactics-patch-", "")
             clean = clean.replace("-notes", "")
             clean = re.sub(r"-\d{4}$", "", clean)
 
             version = clean.replace("-", ".")
-
             if not re.match(r"^\d+\.\d+$", version):
                 continue
 
@@ -76,7 +70,6 @@ class Command(BaseCommand):
         ):
             slug = patches[version]
 
-            # try without -notes first, then fallback
             urls = [
                 f"{GAME_UPDATES_BASE}{slug.replace('-notes', '')}/",
                 f"{GAME_UPDATES_BASE}{slug}/",
@@ -97,24 +90,39 @@ class Command(BaseCommand):
                 continue
 
             soup = BeautifulSoup(article_html, "html.parser")
-            article = soup.find("article") or soup.find("main")
 
-            if not article:
-                self.stderr.write(f"⚠ No article content for {version}")
-                continue
+            # Best target for patch notes
+            container = soup.select_one("#patch-notes-container")
+            if not container:
+                # fallback: Riot rich text container
+                container = soup.select_one('[data-testid="rich-text-html"]')
 
-            text = article.get_text("\n", strip=True)
-            if len(text) < 200:
+            raw_html = None
+            raw_text = None
+
+            if container:
+                raw_html = str(container)
+                raw_text = container.get_text("\n", strip=True)
+            else:
+                # last fallback
+                article = soup.find("article") or soup.find("main")
+                raw_html = str(article) if article else None
+                raw_text = article.get_text("\n", strip=True) if article else ""
+
+            if not raw_text or len(raw_text) < 200:
                 self.stderr.write(f"⚠ Content too short for {version}")
                 continue
 
-            content_hash = hashlib.sha256(text.encode()).hexdigest()
+            # Hash what we actually store
+            hash_payload = (raw_text + "\n\n" + (raw_html or "")).encode("utf-8")
+            content_hash = hashlib.sha256(hash_payload).hexdigest()
 
             patch, created = Patch.objects.get_or_create(
                 game=game,
                 version=version,
                 defaults={
-                    "raw_text": text,
+                    "raw_text": raw_text,
+                    "raw_html": raw_html,
                     "content_hash": content_hash,
                     "source_url": article_url,
                 },
@@ -124,7 +132,8 @@ class Command(BaseCommand):
                 added += 1
                 self.stdout.write(f"✅ Added {version}")
             elif patch.content_hash != content_hash:
-                patch.raw_text = text
+                patch.raw_text = raw_text
+                patch.raw_html = raw_html
                 patch.content_hash = content_hash
                 patch.source_url = article_url
                 patch.save()
@@ -133,8 +142,6 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"⏭ Skipped {version}")
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"\n🎉 Done! Added={added}, Updated={updated}, Total={len(patches)}"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(
+            f"\n🎉 Done! Added={added}, Updated={updated}, Total={len(patches)}"
+        ))

@@ -6,7 +6,7 @@ from django.template.loader import select_template
 from .models import Game, Patch, LinkedGameAccount, PatchSuggestion
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
-
+from main.parsers.tft_patch_parser import parse_tft_patch
 
 def signup(request):
     if request.method == "POST":
@@ -44,9 +44,18 @@ def game_detail(request, slug):
 def patch_detail(request, slug, version):
     game = get_object_or_404(Game, slug=slug)
     patch = get_object_or_404(Patch, game=game, version=version)
-    return render(request, "main/patch_detail.html", {
+
+    sections = None
+    if game.slug == "tft":
+        sections = parse_tft_patch(
+            raw_text=patch.raw_text or "",
+            raw_html=patch.raw_html or None,
+        )
+
+    return render(request, "games/tft/patch_detail.html", {
         "game": game,
         "patch": patch,
+        "sections": sections,  # <-- new
     })
 
 

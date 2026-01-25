@@ -1,0 +1,229 @@
+{% extends "main/base.html" %}
+{% block content %}
+
+  {# =========================
+     PATCH HEADER (centered)
+  ========================= #}
+  <div class="text-center">
+    <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">
+      {{ game.name }} <span class="opacity-70">Patch</span> {{ patch.version }}
+    </h1>
+    {% if patch.source_url %}
+      <div class="mt-2 text-sm opacity-70">
+        <a class="underline hover:opacity-100" href="{{ patch.source_url }}" target="_blank" rel="noreferrer">View official notes</a>
+      </div>
+    {% endif %}
+  </div>
+
+  {# back button (top-left vibe) #}
+  <div class="mt-4 flex justify-between items-center">
+    <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5" href="{% url 'game_detail' game.slug %}">← Back</a>
+    <div class="text-xs opacity-60">Last updated: {{ patch.updated_at|default:"" }}</div>
+  </div>
+
+  <div class="mt-6 space-y-6">
+
+    {% if sections %}
+      {# =========================
+         OVERVIEW (below title)
+      ========================= #}
+      {% if sections.overview %}
+        <div class="Card">
+          <div class="CardBody">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="SectionTitle">Overview</div>
+                <div class="mt-1 text-sm opacity-70">What’s new in {{ patch.version }}</div>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Patch summary</span>
+            </div>
+
+            <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.overview }}</pre>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# =========================
+         FEATURED: Champions / Items / Traits
+         “Large changes” shown by default, expand for All
+      ========================= #}
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {# CHAMPIONS #}
+        {% if sections.champions %}
+          <div class="Card">
+            <div class="CardBody">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="SectionTitle">Champions</div>
+                  <div class="mt-1 text-sm opacity-70">Unit tuning & reworks</div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
+              </div>
+
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
+                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.champions }}</pre>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
+                  <span class="underline">Expand</span>
+                  <span class="text-xs opacity-60">(show all)</span>
+                </summary>
+                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
+                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.champions }}</pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        {% endif %}
+
+        {# ITEMS #}
+        {% if sections.items %}
+          <div class="Card">
+            <div class="CardBody">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="SectionTitle">Items</div>
+                  <div class="mt-1 text-sm opacity-70">Core, radiant & artifacts</div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
+              </div>
+
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
+                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.items }}</pre>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
+                  <span class="underline">Expand</span>
+                  <span class="text-xs opacity-60">(show all)</span>
+                </summary>
+                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
+                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.items }}</pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        {% endif %}
+
+        {# TRAITS #}
+        {% if sections.traits %}
+          <div class="Card">
+            <div class="CardBody">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="SectionTitle">Traits</div>
+                  <div class="mt-1 text-sm opacity-70">Trait breakpoints & tuning</div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
+              </div>
+
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
+                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.traits }}</pre>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
+                  <span class="underline">Expand</span>
+                  <span class="text-xs opacity-60">(show all)</span>
+                </summary>
+                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
+                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.traits }}</pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+
+      {# =========================
+         SECONDARY: Augments + Other
+      ========================= #}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {% if sections.augments %}
+          <div class="Card">
+            <div class="CardBody">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="SectionTitle">Augments</div>
+                  <div class="mt-1 text-sm opacity-70">Balance & availability changes</div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Secondary</span>
+              </div>
+
+              <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.augments }}</pre>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if sections.other %}
+          <div class="Card">
+            <div class="CardBody">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="SectionTitle">System & Other</div>
+                  <div class="mt-1 text-sm opacity-70">Encounters, leveling, bug fixes, etc.</div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Secondary</span>
+              </div>
+
+              <details class="mt-4">
+                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
+                  <span class="underline">Expand</span>
+                  <span class="text-xs opacity-60">(show)</span>
+                </summary>
+                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.other }}</pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+
+      {# =========================
+         FULL RAW (optional)
+      ========================= #}
+      <details class="mt-2">
+        <summary class="cursor-pointer select-none text-sm opacity-70 hover:opacity-100">
+          Show raw patch text
+        </summary>
+        <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <pre class="whitespace-pre-wrap text-sm text-white/70 leading-relaxed">{{ patch.raw_text|default:"No patch notes available." }}</pre>
+        </div>
+      </details>
+
+    {% else %}
+      <div class="Card">
+        <div class="CardBody">
+          <div class="SectionTitle">Patch notes</div>
+          <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ patch.raw_text|default:"No patch notes available." }}</pre>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+{% endblock %}
