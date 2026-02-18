@@ -8,6 +8,9 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path("games/<slug:slug>/patches/<str:version>/",views.patch_detail,name="patch_detail",),
     path("accounts/signup/", views.signup, name="signup"),
+    path("<slug:game_slug>/patch/<str:version>/champions/", views.patch_champions, name="patch_champions"),
+    path("<slug:game_slug>/patch/<str:version>/items/", views.patch_items, name="patch_items"),
+
 ]
 
 

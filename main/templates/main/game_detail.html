@@ -121,7 +121,7 @@
           <div class="SectionTitle">Official patches</div>
           <div class="mt-3">
             <ul class="menu menu-sm">
-              {% for patch in game.patches.all %}
+              {% for patch in patches %}
                 <li><a href="{% url 'patch_detail' game.slug patch.version %}">{{ patch.version }}</a></li>
               {% empty %}
                 <li><span class="text-white/60">No patches yet.</span></li>

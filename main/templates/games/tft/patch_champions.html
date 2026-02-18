@@ -1,0 +1,49 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+
+  <div class="flex items-end justify-between gap-4">
+    <div>
+      <div class="text-xs uppercase tracking-widest text-white/60">{{ game.name }}</div>
+      <h1 class="mt-2 text-2xl font-semibold tracking-tight">
+        Champions — Set {{ set_key }} <span class="text-white/70">(Patch {{ patch.version }})</span>
+      </h1>
+      <div class="mt-2 text-sm text-white/60">All champions currently stored for this set.</div>
+    </div>
+
+    <div class="flex gap-2">
+      <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5"
+         href="{% url 'patch_detail' game.slug patch.version %}">
+        ← Back to patch
+      </a>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    {% for c in champions %}
+      <div class="rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur">
+        <div class="aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+          {% if c.image_url %}
+            <img src="{{ c.image_url }}" alt="{{ c.name }}" class="h-full w-full object-cover" loading="lazy">
+          {% else %}
+            <div class="h-full w-full flex items-center justify-center text-xs text-white/40">No image</div>
+          {% endif %}
+        </div>
+
+        <div class="mt-3 flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <div class="truncate font-semibold text-white/90">{{ c.name }}</div>
+            <div class="text-xs text-white/60">Cost: {{ c.cost }}</div>
+          </div>
+          <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+            {{ c.cost }}
+          </span>
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-white/70">No champions found for set {{ set_key }}.</div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

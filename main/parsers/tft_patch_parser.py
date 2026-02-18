@@ -1,9 +1,25 @@
 from __future__ import annotations
 
+import re
 from bs4 import BeautifulSoup
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypedDict
+
+
+# -----------------------------
+# Public "block" shape (for DB)
+# -----------------------------
+
+class PatchBlock(TypedDict):
+    category: str          # overview/champions/items/traits/augments/other
+    size: str              # all/large/small
+    h2: str                # e.g. "LARGE CHANGES"
+    h4: str                # e.g. "UNITS: Tier 1"
+    order: int             # stable ordering
+    text: str              # readable body
+    lines: List[str]       # bullet lines (if ul)
+    unit_tier: Optional[int]  # extracted from "UNITS: Tier 1" etc
 
 
 @dataclass
@@ -26,9 +42,7 @@ def _mk_buckets() -> Dict[str, Bucket]:
 
 
 def _clean_text(s: str) -> str:
-    # Normalize whitespace a bit (keep newlines readable)
     lines = [ln.rstrip() for ln in (s or "").splitlines()]
-    # drop empty lines at start/end
     while lines and not lines[0].strip():
         lines.pop(0)
     while lines and not lines[-1].strip():
@@ -37,8 +51,6 @@ def _clean_text(s: str) -> str:
 
 
 def _render_node_as_text(node) -> str:
-    # Convert a node subtree to readable text (blockquote, ul, etc.)
-    # Using separator="\n" keeps list items on their own line.
     return _clean_text(node.get_text("\n", strip=True))
 
 
@@ -48,14 +60,10 @@ def _major_group_from_h2(title: str) -> str:
         return "large"
     if "SMALL CHANGES" in t:
         return "small"
-    # Everything else: treat as "all"
     return "all"
 
 
 def _category_from_h4(title: str) -> str:
-    """
-    Map an h4 (change-detail-title) to our categories.
-    """
     t = (title or "").strip().upper()
 
     if t.startswith("UNITS:"):
@@ -65,122 +73,201 @@ def _category_from_h4(title: str) -> str:
     if t in {"AUGMENTS"}:
         return "augments"
 
-    # Items (Riot uses these)
     if t in {"CORE ITEMS", "RADIANT ITEMS", "ARTIFACTS", "EMBLEMS"}:
         return "items"
 
-    # Everything else falls into other (LEVELING, ENCOUNTERS, AURAS, etc.)
     return "other"
 
 
-def _append_block(buckets: Dict[str, Bucket], cat: str, group: str, heading: str, body: str) -> None:
+def _extract_unit_tier(h4_title: str) -> Optional[int]:
+    """
+    Extracts tier from strings like:
+      "UNITS: Tier 1" / "UNITS: TIER 2" / "UNITS: Tier 3"
+    """
+    if not h4_title:
+        return None
+    m = re.search(r"\bTIER\s*(\d+)\b", h4_title.strip().upper())
+    if not m:
+        return None
+    try:
+        return int(m.group(1))
+    except ValueError:
+        return None
+
+
+def _append_bucket_block(
+    buckets: Dict[str, Bucket],
+    cat: str,
+    size: str,
+    heading: str,
+    body: str,
+) -> None:
     body = _clean_text(body)
     if not body:
         return
 
-    # Keep heading in the body for readability
     block = f"{heading}\n{body}".strip() if heading else body
-
-    # Always store into ".all" as a superset, and also into large/small if applicable
     buckets[cat].all.append(block)
-    if group == "large":
+    if size == "large":
         buckets[cat].large.append(block)
-    elif group == "small":
+    elif size == "small":
         buckets[cat].small.append(block)
 
 
-def parse_tft_patch_html(raw_html: str) -> OrderedDict:
+# =========================================================
+# NEW: Structured blocks for saving PatchSection rows
+# =========================================================
+def parse_tft_patch_blocks(raw_html: str) -> List[PatchBlock]:
     """
-    HTML-first parser.
-    Input: the HTML string that includes <div id="patch-notes-container">...</div>
-    Output keys:
-      overview, champions, items, traits, augments, other
+    Returns a list of structured blocks, preserving:
+      - Large/Small (from H2)
+      - Subheading (H4, e.g. "UNITS: Tier 1")
+      - Order in document
+      - Bullet lines (UL -> LI list)
+      - Optional unit_tier (from H4)
 
-    Each value is a dict with keys: all, large, small (strings).
-    Example:
-      out["items"]["large"] = "...blocks..."
+    This is what you save into PatchSection.
     """
     if not raw_html:
-        return OrderedDict()
+        return []
 
     soup = BeautifulSoup(raw_html, "html.parser")
     root = soup.select_one("#patch-notes-container") or soup
 
-    buckets = _mk_buckets()
+    blocks: List[PatchBlock] = []
+    order = 0
 
-    # --- OVERVIEW: take the first blockquote.context + designers block if present
+    # Overview: intro + designers (we store as a single overview block)
     intro = root.select_one("blockquote.blockquote.context")
     designers = root.select_one(".context-designers")
 
-    overview_parts = []
+    overview_parts: List[str] = []
     if intro:
         overview_parts.append(_render_node_as_text(intro))
     if designers:
-        # Designers are usually spans with text
         overview_parts.append(_render_node_as_text(designers))
 
     if overview_parts:
-        buckets["overview"].all.append(_clean_text("\n\n".join(overview_parts)))
+        blocks.append({
+            "category": "overview",
+            "size": "all",
+            "h2": "",
+            "h4": "",
+            "order": order,
+            "text": _clean_text("\n\n".join(overview_parts)),
+            "lines": [],
+            "unit_tier": None,
+        })
+        order += 1
 
-    # --- Walk the document in order, tracking current H2 major section
-    current_major_group = "all"
-    current_h2_title = None
+    current_h2 = ""
+    current_size = "all"
+    current_h4 = ""
 
-    # We iterate through root descendants, but only react to h2/h4 and content blocks
-    # The Riot structure is: h2 -> content -> h4 -> blockquote/ul -> h4 -> ...
+    # Walk important nodes in order
     for el in root.find_all(["h2", "h4", "blockquote", "ul"], recursive=True):
         if el.name == "h2":
-            current_h2_title = _clean_text(el.get_text(" ", strip=True))
-            current_major_group = _major_group_from_h2(current_h2_title)
+            current_h2 = _clean_text(el.get_text(" ", strip=True))
+            current_size = _major_group_from_h2(current_h2)
             continue
 
-        # We only categorize blocks under an h4 (subsection). Otherwise it goes to "other".
         if el.name == "h4":
-            # store current "active" h4 in a variable by attaching it to soup temporarily
-            el.attrs["_active_h4"] = "1"
-            # also keep a pointer on root (simple hack) so other elements can find the last h4
-            root.attrs["_last_h4_title"] = _clean_text(el.get_text(" ", strip=True))
+            current_h4 = _clean_text(el.get_text(" ", strip=True))
             continue
 
-        # content blocks: blockquote or ul
-        if el.name in {"blockquote", "ul"}:
-            # Ignore the intro blockquote we already used in overview if it's the same node
-            if intro and el is intro:
+        # Skip the overview intro blockquote we already handled above
+        if el.name == "blockquote" and intro and el is intro:
+            continue
+
+        cat = _category_from_h4(current_h4) if current_h4 else "other"
+        unit_tier = _extract_unit_tier(current_h4) if cat == "champions" else None
+
+        if el.name == "ul":
+            lines = [
+                _clean_text(li.get_text(" ", strip=True))
+                for li in el.find_all("li", recursive=True)
+            ]
+            lines = [ln for ln in lines if ln]
+
+            text = _clean_text("\n".join(lines))  # readable
+            if not text:
                 continue
 
-            h4_title = root.attrs.get("_last_h4_title")  # last seen h4 title (string) or None
-            cat = _category_from_h4(h4_title) if h4_title else "other"
+            blocks.append({
+                "category": cat,
+                "size": current_size,
+                "h2": current_h2,
+                "h4": current_h4,
+                "order": order,
+                "text": text,
+                "lines": lines,
+                "unit_tier": unit_tier,
+            })
+            order += 1
+            continue
 
-            # heading shown to user: include the h4 title; optionally include H2 context too
-            heading = h4_title or (current_h2_title or "")
+        if el.name == "blockquote":
+            text = _render_node_as_text(el)
+            if not text:
+                continue
 
-            body = _render_node_as_text(el)
-            _append_block(buckets, cat, current_major_group, heading, body)
+            blocks.append({
+                "category": cat,
+                "size": current_size,
+                "h2": current_h2,
+                "h4": current_h4,
+                "order": order,
+                "text": text,
+                "lines": [],
+                "unit_tier": unit_tier,
+            })
+            order += 1
+            continue
 
-    # --- Build final OrderedDict, with strings for each bucket/group
+    return blocks
+
+
+# =========================================================
+# OLD: Keep your existing dict output for templates
+# =========================================================
+def parse_tft_patch_html(raw_html: str) -> OrderedDict:
+    """
+    Backwards compatible output for your templates:
+      out["items"]["large"] = "...string..."
+    """
+    blocks = parse_tft_patch_blocks(raw_html)
+    if not blocks:
+        return OrderedDict()
+
+    buckets = _mk_buckets()
+
+    for b in blocks:
+        cat = b["category"]
+        size = b["size"]
+        heading = b["h4"] or b["h2"] or ""
+        _append_bucket_block(buckets, cat, size, heading, b["text"])
+
     out = OrderedDict()
     for key in ["overview", "champions", "items", "traits", "augments", "other"]:
-        b = buckets[key]
+        bk = buckets[key]
         out[key] = {
-            "all": _clean_text("\n\n".join(b.all)),
-            "large": _clean_text("\n\n".join(b.large)),
-            "small": _clean_text("\n\n".join(b.small)),
+            "all": _clean_text("\n\n".join(bk.all)),
+            "large": _clean_text("\n\n".join(bk.large)),
+            "small": _clean_text("\n\n".join(bk.small)),
         }
-
     return out
 
 
 def parse_tft_patch(raw_text: str = "", raw_html: Optional[str] = None) -> OrderedDict:
     """
-    Public entrypoint:
-    Prefer HTML if available; fall back to old text parsing if needed.
+    Public entrypoint used by templates/views today.
+    Prefer HTML; fallback to text.
     """
     if raw_html:
         parsed = parse_tft_patch_html(raw_html)
         if parsed:
             return parsed
 
-    # Fallback: keep your old simple text behavior (optional)
     if raw_text:
         return OrderedDict([
             ("overview", {"all": raw_text.strip(), "large": "", "small": ""}),

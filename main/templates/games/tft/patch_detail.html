@@ -1,212 +1,252 @@
 {% extends "main/base.html" %}
 {% block content %}
 
-  {# =========================
-     PATCH HEADER (centered)
-  ========================= #}
-  <div class="text-center">
-    <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">
-      {{ game.name }} <span class="opacity-70">Patch</span> {{ patch.version }}
-    </h1>
-    {% if patch.source_url %}
-      <div class="mt-2 text-sm opacity-70">
-        <a class="underline hover:opacity-100" href="{{ patch.source_url }}" target="_blank" rel="noreferrer">View official notes</a>
-      </div>
-    {% endif %}
-  </div>
+<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-  {# back button (top-left vibe) #}
-  <div class="mt-4 flex justify-between items-center">
-    <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5" href="{% url 'game_detail' game.slug %}">← Back</a>
-    <div class="text-xs opacity-60">Last updated: {{ patch.updated_at|default:"" }}</div>
+  <!-- HERO / HEADER -->
+  <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-white/60">{{ game.name }}</div>
+        <h1 class="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">
+          Patch <span class="text-white/80">{{ patch.version }}</span>
+        </h1>
+
+        <div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/70">
+          {% if patch.updated_at %}
+            <span class="inline-flex items-center gap-2">
+              <span class="opacity-60">Updated</span>
+              <span class="font-medium text-white/80">{{ patch.updated_at|date:"Y-m-d H:i" }}</span>
+            </span>
+          {% endif %}
+
+          {% if patch.source_url %}
+            <span class="opacity-40">•</span>
+            <a class="underline decoration-white/30 hover:decoration-white/60 hover:text-white"
+               href="{{ patch.source_url }}" target="_blank" rel="noreferrer">
+              Official notes ↗
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5"
+           href="{% url 'game_detail' game.slug %}">
+          ← Back
+        </a>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5"
+          href="{% url 'patch_champions' game.slug patch.version %}">
+          Champions
+        </a>
+
+        <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5"
+          href="{% url 'patch_items' game.slug patch.version %}">
+          Items
+        </a>
+
+        <a class="btn btn-outline btn-sm border-white/15 hover:bg-white/5"
+          href="{% url 'game_detail' game.slug %}">
+          ← Back
+        </a>
+      </div>
+
+    </div>
   </div>
 
   <div class="mt-6 space-y-6">
 
     {% if sections %}
-      {# =========================
-         OVERVIEW (below title)
-      ========================= #}
-      {% if sections.overview %}
-        <div class="Card">
-          <div class="CardBody">
-            <div class="flex items-start justify-between gap-3">
+
+      <!-- RIOT MESSAGE -->
+      {% if sections.overview and sections.overview.all %}
+        <section class="rounded-3xl border border-amber-300/25 bg-amber-500/10 p-5 sm:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-sm font-semibold tracking-wide text-amber-200">
+                Riot message
+              </h2>
+              <p class="mt-1 text-xs sm:text-sm text-amber-100/80">
+                Context & intent behind the patch
+              </p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full border border-amber-200/20 bg-black/10 text-amber-100/80">
+              From Riot
+            </span>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-amber-200/15 bg-black/10 p-4">
+            <pre class="whitespace-pre-wrap text-sm leading-relaxed text-amber-50/90">{{ sections.overview.all }}</pre>
+          </div>
+        </section>
+      {% endif %}
+
+      <!-- PRIMARY GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- CHAMPIONS -->
+        {% if sections.champions.large or sections.champions.all %}
+          <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+            <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="SectionTitle">Overview</div>
-                <div class="mt-1 text-sm opacity-70">What’s new in {{ patch.version }}</div>
+                <div class="text-base font-semibold tracking-tight">Champions</div>
+                <div class="mt-1 text-sm text-white/60">Unit tuning & reworks</div>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Patch summary</span>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                Priority
+              </span>
+            </div>
+
+            {% if sections.champions.large %}
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">Large changes (preview)</div>
+                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm leading-relaxed text-white/85 line-clamp-12">{{ sections.champions.large }}</pre>
+                  <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-black/40 to-transparent"></div>
+                </div>
+              </div>
+            {% endif %}
+
+            <details class="mt-3">
+              <summary class="cursor-pointer select-none text-sm text-white/75 hover:text-white inline-flex items-center gap-2">
+                <span class="underline decoration-white/30 hover:decoration-white/60">Expand</span>
+                <span class="text-xs text-white/50">(show all)</span>
+              </summary>
+              <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">All changes</div>
+                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.champions.all|default:"" }}</pre>
+              </div>
+            </details>
+          </section>
+        {% endif %}
+
+        <!-- ITEMS -->
+        {% if sections.items.large or sections.items.all %}
+          <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-base font-semibold tracking-tight">Items</div>
+                <div class="mt-1 text-sm text-white/60">Core, radiant & artifacts</div>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                Priority
+              </span>
+            </div>
+
+            {% if sections.items.large %}
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">Large changes (preview)</div>
+                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm leading-relaxed text-white/85 line-clamp-12">{{ sections.items.large }}</pre>
+                  <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-black/40 to-transparent"></div>
+                </div>
+              </div>
+            {% endif %}
+
+            <details class="mt-3">
+              <summary class="cursor-pointer select-none text-sm text-white/75 hover:text-white inline-flex items-center gap-2">
+                <span class="underline decoration-white/30 hover:decoration-white/60">Expand</span>
+                <span class="text-xs text-white/50">(show all)</span>
+              </summary>
+              <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">All changes</div>
+                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.items.all|default:"" }}</pre>
+              </div>
+            </details>
+          </section>
+        {% endif %}
+
+        <!-- TRAITS -->
+        {% if sections.traits.large or sections.traits.all %}
+          <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-base font-semibold tracking-tight">Traits</div>
+                <div class="mt-1 text-sm text-white/60">Breakpoints & tuning</div>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                Priority
+              </span>
+            </div>
+
+            {% if sections.traits.large %}
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">Large changes (preview)</div>
+                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
+                  <pre class="whitespace-pre-wrap text-sm leading-relaxed text-white/85 line-clamp-12">{{ sections.traits.large }}</pre>
+                  <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-black/40 to-transparent"></div>
+                </div>
+              </div>
+            {% endif %}
+
+            <details class="mt-3">
+              <summary class="cursor-pointer select-none text-sm text-white/75 hover:text-white inline-flex items-center gap-2">
+                <span class="underline decoration-white/30 hover:decoration-white/60">Expand</span>
+                <span class="text-xs text-white/50">(show all)</span>
+              </summary>
+              <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="text-xs uppercase tracking-wider text-white/50 mb-2">All changes</div>
+                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.traits.all|default:"" }}</pre>
+              </div>
+            </details>
+          </section>
+        {% endif %}
+
+      </div>
+
+      <!-- SECONDARY GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {% if sections.augments and sections.augments.all %}
+          <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-base font-semibold tracking-tight">Augments</div>
+                <div class="mt-1 text-sm text-white/60">Balance & availability</div>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                Secondary
+              </span>
             </div>
 
             <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.overview.all|default:sections.overview }}</pre>
+              <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.augments.all }}</pre>
             </div>
-          </div>
-        </div>
-      {% endif %}
-
-      {# =========================
-         FEATURED: Champions / Items / Traits
-         “Large changes” shown by default, expand for All
-      ========================= #}
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {# CHAMPIONS #}
-        {% if sections.champions %}
-          <div class="Card">
-            <div class="CardBody">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="SectionTitle">Champions</div>
-                  <div class="mt-1 text-sm opacity-70">Unit tuning & reworks</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
-              </div>
-
-              <div class="mt-4">
-                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
-                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
-                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.champions.large|default:sections.champions }}</pre>
-                </div>
-              </div>
-
-              <details class="mt-3">
-                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
-                  <span class="underline">Expand</span>
-                  <span class="text-xs opacity-60">(show all)</span>
-                </summary>
-                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
-                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed"> {{ sections.champions.all|default:sections.champions }}</pre>
-                </div>
-              </details>
-            </div>
-          </div>
+          </section>
         {% endif %}
 
-        {# ITEMS #}
-        {% if sections.items %}
-          <div class="Card">
-            <div class="CardBody">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="SectionTitle">Items</div>
-                  <div class="mt-1 text-sm opacity-70">Core, radiant & artifacts</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
+        {% if sections.other and sections.other.all %}
+          <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-base font-semibold tracking-tight">System & Other</div>
+                <div class="mt-1 text-sm text-white/60">Encounters, leveling, bug fixes</div>
               </div>
-
-              <div class="mt-4">
-                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
-                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
-                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.items.large|default:sections.items}}</pre>
-                </div>
-              </div>
-
-              <details class="mt-3">
-                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
-                  <span class="underline">Expand</span>
-                  <span class="text-xs opacity-60">(show all)</span>
-                </summary>
-                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
-                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.items.all|default:sections.items}}</pre>
-                </div>
-              </details>
+              <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/70">
+                Secondary
+              </span>
             </div>
-          </div>
-        {% endif %}
 
-        {# TRAITS #}
-        {% if sections.traits %}
-          <div class="Card">
-            <div class="CardBody">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="SectionTitle">Traits</div>
-                  <div class="mt-1 text-sm opacity-70">Trait breakpoints & tuning</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Priority</span>
+            <details class="mt-4">
+              <summary class="cursor-pointer select-none text-sm text-white/75 hover:text-white inline-flex items-center gap-2">
+                <span class="underline decoration-white/30 hover:decoration-white/60">Expand</span>
+                <span class="text-xs text-white/50">(show)</span>
+              </summary>
+              <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.other.all }}</pre>
               </div>
-
-              <div class="mt-4">
-                <div class="text-xs uppercase tracking-wider opacity-60 mb-2">Large changes (preview)</div>
-                <div class="rounded-2xl border border-white/10 bg-linear-to-b from-white/5 to-transparent p-4">
-                  <pre class="whitespace-pre-wrap text-sm text-white/85 leading-relaxed line-clamp-12">{{ sections.traits.large|default:sections.traits }}</pre>
-                </div>
-              </div>
-
-              <details class="mt-3">
-                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
-                  <span class="underline">Expand</span>
-                  <span class="text-xs opacity-60">(show all)</span>
-                </summary>
-                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div class="text-xs uppercase tracking-wider opacity-60 mb-2">All changes</div>
-                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.traits.all|default:sections.traits }}</pre>
-                </div>
-              </details>
-            </div>
-          </div>
+            </details>
+          </section>
         {% endif %}
 
       </div>
 
-      {# =========================
-         SECONDARY: Augments + Other
-      ========================= #}
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {% if sections.augments %}
-          <div class="Card">
-            <div class="CardBody">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="SectionTitle">Augments</div>
-                  <div class="mt-1 text-sm opacity-70">Balance & availability changes</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Secondary</span>
-              </div>
-
-              <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.augments.all|default:sections.augments }}</pre>
-              </div>
-            </div>
-          </div>
-        {% endif %}
-
-        {% if sections.other %}
-          <div class="Card">
-            <div class="CardBody">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="SectionTitle">System & Other</div>
-                  <div class="mt-1 text-sm opacity-70">Encounters, leveling, bug fixes, etc.</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/5 opacity-80">Secondary</span>
-              </div>
-
-              <details class="mt-4">
-                <summary class="cursor-pointer select-none text-sm opacity-80 hover:opacity-100 inline-flex items-center gap-2">
-                  <span class="underline">Expand</span>
-                  <span class="text-xs opacity-60">(show)</span>
-                </summary>
-                <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ sections.other.all|default:sections.other }}</pre>
-                </div>
-              </details>
-            </div>
-          </div>
-        {% endif %}
-
-      </div>
-
-      {# =========================
-         FULL RAW (optional)
-      ========================= #}
+      <!-- RAW (OPTIONAL) -->
       <details class="mt-2">
-        <summary class="cursor-pointer select-none text-sm opacity-70 hover:opacity-100">
+        <summary class="cursor-pointer select-none text-sm text-white/60 hover:text-white/80">
           Show raw patch text
         </summary>
         <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -215,15 +255,17 @@
       </details>
 
     {% else %}
-      <div class="Card">
-        <div class="CardBody">
-          <div class="SectionTitle">Patch notes</div>
-          <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ patch.raw_text|default:"No patch notes available." }}</pre>
-          </div>
+
+      <section class="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur">
+        <div class="text-base font-semibold tracking-tight">Patch notes</div>
+        <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <pre class="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">{{ patch.raw_text|default:"No patch notes available." }}</pre>
         </div>
-      </div>
+      </section>
+
     {% endif %}
 
   </div>
+</div>
+
 {% endblock %}
